@@ -9,15 +9,14 @@
 class SettingsClass():
     """ class for all varibles of the main that have hardcoded defaults """
 
-    def __init__(self, check_type=0):
+    def __init__(self):
         # init defaults
 
         # flags
-        self.pull_html = True
+        self.pull_html = False
 
         # input variables
-        self.urls = ["https://www.gumtree.com.au/s-computers-software/brisbane/c18309l3005721?sort=rank&price-type=free"]
-        # self.urls = ["https://docs.python.org/3/library/pickle.html"]
+        self.urls = ["https://www.gumtree.com.au/s-brisbane/l3005721?sort=rank&price-type=free"]
 
 def main():
     # should not actually be run from here. import to different script

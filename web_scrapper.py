@@ -4,7 +4,7 @@
 # Date 20/10/2020
 
 from bs4 import BeautifulSoup
-import urllib.request
+import requests
 
 import pickle
 
@@ -16,21 +16,24 @@ def main():
 
 class WebScrapper():
 
-    def parse_site(self, url):
+    def parse_site_bs(self, url, save_location):
 
         if url == "":
             print("no url given")
             return False
 
-        page = urllib.request.urlopen(url)
-        html = page.read().decode("utf-8")
-        soup = BeautifulSoup(html, "html.parser")
+        response = requests.get(url)
+        if response.status_code == 200:
+            with open(save_location, 'wb') as f:
+                f.write(response.content)
+        soup = BeautifulSoup(response.content, "html.parser")
         return soup
     
-    def parse_local_file(self, filename):
+    def parse_local_file_bs(self, filename):
         
         soup = BeautifulSoup(open(filename, 'rb'), "html.parser")
         return soup
+
 
 
 if __name__ == "__main__":

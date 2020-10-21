@@ -4,12 +4,11 @@
 # Date 20/10/2020
 
 import pickle
-import sys
-import urllib.request
 
 # python script imports
 import settings as settings_file
 import web_scrapper
+import items_structures
 
 
 def main():
@@ -18,29 +17,32 @@ def main():
 
     WS = web_scrapper.WebScrapper()
 
-    site_soups = []
-
-    test_list = []
+    parsed_site_objects = []
 
     for i, url in enumerate(settings.urls):
         if settings.pull_html:
-            # get BeautifulSoup parsed format of we sites. Pickle for reuse
-            site_soup = WS.parse_site(settings.urls[0])
-            site_soups.append(site_soup)
-
-            urllib.request.urlretrieve(
-                url, "html_files/html_" + str(i) + ".html")
+            # get BeautifulSoup parsed format of web sites. saved to /html_files folder
+            parsed_site_object = WS.parse_site_bs(
+                settings.urls[i],  ("html_files/html_" + str(i) + ".html"))
+            parsed_site_objects.append(parsed_site_object)
         else:
-            site_soups.append(WS.parse_local_file("html_files/html_" + str(i) + ".html"))
+            parsed_site_objects.append(WS.parse_local_file_bs(
+                "html_files/html_" + str(i) + ".html"))
 
-    test_list = site_soups[0].find_all("a")
+    IC = items_structures.SaleItemConstructor()
 
-    print(test_list)
+    IC.generate_items_gumtree(parsed_site_objects[0])
 
     print("main finished")
 
     return
 
 
+def test():
+
+    print("test finished")
+
+
 if __name__ == "__main__":
     main()
+    # test()
