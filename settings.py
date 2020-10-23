@@ -13,10 +13,22 @@ class SettingsClass():
         # init defaults
 
         # flags
-        self.pull_html = False
+        self.pull_html = True
+        self.email_notify = True       # flag to push notify to email
+
+        # email notify list
+        self.email_list = ['lanebirmbetnotify@gmail.com']
 
         # input variables
-        self.urls = ["https://www.gumtree.com.au/s-brisbane/l3005721?sort=rank&price-type=free"]
+        self.urls = [
+            "https://www.gumtree.com.au/s-brisbane/l3005721?sort=rank&price-type=free"]
+
+        # constants
+        self.html_save_location_prefix = "html_files/html_"
+        self.csv_save_location = "latest_data.csv"
+
+        self.save_current_only = False
+
 
 def main():
     # should not actually be run from here. import to different script
