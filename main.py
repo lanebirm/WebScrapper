@@ -38,6 +38,11 @@ def main():
     # gumtree items generated
     sale_items.extend(IC.generate_items_gumtree(parsed_site_objects[0]))
 
+    # if no new sale items exit script
+    if len(sale_items) < 1:
+        print("No sale items found. Exiting")
+        return True
+
     sale_items_df = pd.DataFrame(sale_items)
 
     if settings.save_current_only == True:
@@ -63,7 +68,7 @@ def main():
     # if no match found add all items to outgoing sale item df
     items_to_add = pd.DataFrame()
     if match_index == -1:
-        # no item match found. Add all to list
+        # no item match found. Add all to list if list has size
         items_to_add = sale_items_df
     elif match_index == 0:
         # match found at first index. List is up to date. Dont update and don't email notify
