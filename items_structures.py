@@ -20,7 +20,7 @@ class SaleItemConstructor():
 
         # init defaults
         self.supported_sites = ["Gumtree"]
-        self.df_column_names = ['Site Title', 'Post Time','Description', 'Location', 'Price', 'Link', ]
+        self.df_column_names = ['Site Title', 'Post Time','Description', 'Location', 'Price', 'Link']
 
     def generate_items_gumtree(self, site_object):
 
