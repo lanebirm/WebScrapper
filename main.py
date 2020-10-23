@@ -12,6 +12,7 @@ import settings as settings_file
 import web_scrapper
 import items_structures
 import simple_notifications as SimplyNotify
+import time_convertor
 
 
 def main():
@@ -54,36 +55,45 @@ def main():
     prev_sale_items_df = pd.DataFrame()
     try:
         prev_sale_items_df = pd.read_csv(settings.csv_save_location)
+        prev_sale_items_df["Post Time"] = pd.to_datetime(prev_sale_items_df["Post Time"]) 
     except:
         print("Could not load csv")
-
-    match_index = -1
-    for index, row in sale_items_df.iterrows():
-        # iterate through each row and compare until up to date with previously found items i.e. first row of saved values
-        if row["Link"] == prev_sale_items_df["Link"][0]:
-            # add all entries before this row to previous list
-            match_index = index
-            break
-
-    # if no match found add all items to outgoing sale item df
-    items_to_add = pd.DataFrame()
-    if match_index == -1:
-        # no item match found. Add all to list if list has size
-        items_to_add = sale_items_df
-    elif match_index == 0:
-        # match found at first index. List is up to date. Dont update and don't email notify
+    
+    # check links to find matches
+    prev_links = prev_sale_items_df["Link"]
+    current_links = sale_items_df["Link"]
+    
+    if current_links[0] in prev_links:
+        # latest post is already saved in prev_links. No update needed
         print('Items list is up to date')
         return True
-    else:
-        # only take top entries above match
-        items_to_add = sale_items_df.head(match_index)
 
-    # Concatenating DataFrames
-    prev_sale_items_df = prev_sale_items_df.reset_index(drop=True)
-    items_to_add = items_to_add.reset_index(drop=True)
-    current_sale_items_df = pd.concat(
-        [items_to_add, prev_sale_items_df], axis=0, sort=False)
-    current_sale_items_df = current_sale_items_df.reset_index(drop=True)
+    # new item avaliable. Replace all last hour items and 
+    time_one_hour_ago = time_convertor.TimeClass()
+    time_one_hour_ago.gen_AEST(60.0)
+
+    cut_index = -1
+    for index, row in prev_sale_items_df.iterrows():
+        if row["Post Time"] < time_one_hour_ago.local_time:
+            # row post time is older than an hour
+            cut_index = index
+            break
+
+    current_sale_items_df = ""
+    if cut_index == -1:
+        # no old posts found. Just use new list
+        current_sale_items_df = sale_items_df
+    else:
+        if cut_index != 0:
+            # trim prev_sale_items_df to only items over an hour old
+            prev_sale_items_df = prev_sale_items_df.tail(-cut_index)
+
+        # Concatenating DataFrames
+        prev_sale_items_df = prev_sale_items_df.reset_index(drop=True)
+        sale_items_df = sale_items_df.reset_index(drop=True)
+        current_sale_items_df = pd.concat(
+            [sale_items_df, prev_sale_items_df], axis=0, sort=False)
+        current_sale_items_df = current_sale_items_df.reset_index(drop=True)
 
     # update csv
     current_sale_items_df.to_csv("latest_data.csv", index=False)

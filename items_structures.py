@@ -66,8 +66,9 @@ class SaleItemConstructor():
 
             if 'minute' in post_age_div_text:
                 mins_ago = float(post_age_div_text.split(" minute")[0])
-                sale_item['Post Time'] = time_convertor.TimeClass()
-                sale_item['Post Time'].gen_AEST(mins_ago)
+                post_time = time_convertor.TimeClass()
+                post_time.gen_AEST(mins_ago)
+                sale_item['Post Time'] = post_time.local_time
             else:
                 # post more then an hour old. Don't save. Assume already on file
                 continue
@@ -81,7 +82,7 @@ class SaleItemConstructor():
             sale_item['Description'] = split_string[0]
 
             split_string = item_detail_string.split("Location: ")
-            sale_item['Location'] = split_string[1].split("\n")[0]
+            sale_item['Location'] = split_string[1].split(" Ad")[0]
 
             split_string = item_detail_string.split("Price: ")
             sale_item['Price']= split_string[1].split("\n")[0]
