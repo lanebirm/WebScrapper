@@ -106,6 +106,15 @@ def main():
 
     if settings.email_notify == True:
         msg = SimplyNotify.MIMEMultipart()
+
+        # Attach links to pages scrapped
+        links_string = "Links Scrapped Are: \n"
+        for link in settings.urls:
+            links_string = links_string + link + "\n"
+        msg.attach(SimplyNotify.MIMEText(
+            links_string))
+
+        # Gen df in email form
         html = """\
             <html>
             <head></head>
