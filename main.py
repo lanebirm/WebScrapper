@@ -61,10 +61,8 @@ def main():
         print("Could not load csv")
 
     # check links to find matches
-    prev_links = prev_sale_items_df["Link"]
     current_links = sale_items_df["Link"]
-
-    if current_links[0] in prev_links:
+    if prev_sale_items_df.isin([current_links[0]]).any().any():
         # latest post is already saved in prev_links. No update needed
         print('Items list is up to date')
         return True
