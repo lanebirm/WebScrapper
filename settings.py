@@ -14,7 +14,7 @@ class SettingsClass():
 
         # flags
         self.pull_html = True
-        self.email_notify = False       # flag to push notify to email
+        self.email_notify = True       # flag to push notify to email
 
         # email notify list
         self.email_list = ['lanebirmbetnotify@gmail.com']

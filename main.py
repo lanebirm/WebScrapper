@@ -55,20 +55,21 @@ def main():
     prev_sale_items_df = pd.DataFrame()
     try:
         prev_sale_items_df = pd.read_csv(settings.csv_save_location)
-        prev_sale_items_df["Post Time"] = pd.to_datetime(prev_sale_items_df["Post Time"]) 
+        prev_sale_items_df["Post Time"] = pd.to_datetime(
+            prev_sale_items_df["Post Time"])
     except:
         print("Could not load csv")
-    
+
     # check links to find matches
     prev_links = prev_sale_items_df["Link"]
     current_links = sale_items_df["Link"]
-    
+
     if current_links[0] in prev_links:
         # latest post is already saved in prev_links. No update needed
         print('Items list is up to date')
         return True
 
-    # new item avaliable. Replace all last hour items and 
+    # new item avaliable. Replace all last hour items and
     time_one_hour_ago = time_convertor.TimeClass()
     time_one_hour_ago.gen_AEST(60.0)
 
@@ -95,7 +96,8 @@ def main():
             [sale_items_df, prev_sale_items_df], axis=0, sort=False)
         current_sale_items_df = current_sale_items_df.reset_index(drop=True)
 
-    # update csv
+    # trim to 50 items. Update csv
+    current_sale_items_df = current_sale_items_df.head(50)
     current_sale_items_df.to_csv("latest_data.csv", index=False)
 
     email_df = current_sale_items_df
@@ -120,9 +122,6 @@ def main():
             SimplyNotify.email(
                 'New Free Items', emails, input_msg=msg)
 
-
-    print("main finished")
-
     return
 
 
@@ -133,4 +132,5 @@ def test():
 
 if __name__ == "__main__":
     main()
+    print("main finished")
     # test()
