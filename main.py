@@ -3,9 +3,11 @@
 # Author: Lane Birmingham
 # Date 20/10/2020
 
+from os import set_inheritable
 import pickle
 import numpy as np
 import pandas as pd
+import sqlite3 
 
 # python script imports
 import settings as settings_file
@@ -24,6 +26,11 @@ def main():
     sale_items = []
     parsed_site_objects = []
 
+    email_notify = settings.email_notify
+
+    # database connection # TODO
+    # conn = sqlite3.connect('sale_items.db')
+
     for i, url in enumerate(settings.urls):
         if settings.pull_html:
             # get BeautifulSoup parsed format of web sites. saved to /html_files folder
@@ -37,7 +44,8 @@ def main():
     IC = items_structures.SaleItemConstructor()
 
     # gumtree items generated
-    sale_items.extend(IC.generate_items_gumtree(parsed_site_objects[0]))
+    for soup in parsed_site_objects:
+        sale_items.extend(IC.generate_items_gumtree(soup, settings.wanted_items_key_words))
 
     # if no new sale items exit script
     if len(sale_items) < 1:
@@ -60,12 +68,28 @@ def main():
     except:
         print("Could not load csv")
 
-    # check links to find matches
-    current_links = sale_items_df["Link"]
-    if prev_sale_items_df.isin([current_links[0]]).any().any():
-        # latest post is already saved in prev_links. No update needed
-        print('Items list is up to date')
-        return True
+    # Check through new items against wanted items list to decide if an email notification is needed
+    if email_notify and settings.wanted_items_key_word_check:
+        # email notify enabled in settings. Now check through wanted item keyword list
+        # set to false then will be set back if key word match is found
+        email_notify = False
+        if len(settings.wanted_items_key_words) > 0:
+            for word in settings.wanted_items_key_words:
+                for row in sale_items_df.iterrows():
+                    if word in row[1]["Description"]:
+                        # keyword match found. 
+                        # now check if already found previously
+                        if not prev_sale_items_df.isin([row[1]["Link"]]).any().any():
+                            # not previously scrapped. New item. Email notify
+                            email_notify = True
+                            break
+    else:
+        # check links to find matches
+        current_links = sale_items_df["Link"]
+        if prev_sale_items_df.isin([current_links[0]]).any().any():
+            # latest post is already saved in prev_links. No update needed
+            print('Items list is up to date')
+            return True
 
     # new item avaliable. Replace all last hour items and
     time_one_hour_ago = time_convertor.TimeClass()
@@ -94,15 +118,13 @@ def main():
             [sale_items_df, prev_sale_items_df], axis=0, sort=False)
         current_sale_items_df = current_sale_items_df.reset_index(drop=True)
 
-    # trim to 50 items. Update csv
-    current_sale_items_df = current_sale_items_df.head(50)
+    # trim to 100 items. Update csv
+    current_sale_items_df = current_sale_items_df.head(100)
     current_sale_items_df.to_csv("latest_data.csv", index=False)
 
     email_df = current_sale_items_df
 
-    # TODO: filter out "WANTED", etc. Will need to rethink check if new items as will have to skip the items to be filtered
-
-    if settings.email_notify == True:
+    if email_notify == True:
         msg = SimplyNotify.MIMEMultipart()
 
         # Attach links to pages scrapped
@@ -127,7 +149,7 @@ def main():
 
         for emails in settings.email_list:
             SimplyNotify.email(
-                'New Free Items', emails, input_msg=msg)
+                'New Items', emails, input_msg=msg)
 
     return
 

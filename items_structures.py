@@ -22,7 +22,7 @@ class SaleItemConstructor():
         self.supported_sites = ["Gumtree"]
         self.df_column_names = ['Site Title', 'Post Time','Description', 'Location', 'Price', 'Link']
 
-    def generate_items_gumtree(self, site_object):
+    def generate_items_gumtree(self, site_object, key_description_words=[]):
 
         sale_items = []
 
@@ -74,12 +74,23 @@ class SaleItemConstructor():
                 continue
 
             item_detail_string = a.get('aria-label')
-            item_link = a.get('href')
-
-            sale_item['Site Title'] = site_title
 
             split_string = item_detail_string.split("\n")
             sale_item['Description'] = split_string[0]
+
+            # if key words given then check if in description. If not dont add item
+            if len(key_description_words) > 0:
+                key_found = False
+                for key_word in key_description_words:
+                    if key_word in sale_item['Description']:
+                        key_found = True
+                        break
+                
+                if key_found == False:
+                    # no key found in the description. Dont add item
+                    continue
+
+            sale_item['Site Title'] = site_title
 
             split_string = item_detail_string.split("Location: ")
             sale_item['Location'] = split_string[1].split(" Ad")[0]
@@ -87,6 +98,7 @@ class SaleItemConstructor():
             split_string = item_detail_string.split("Price: ")
             sale_item['Price']= split_string[1].split("\n")[0]
 
+            item_link = a.get('href')
             sale_item['Link'] = "https://www.gumtree.com.au" + item_link
 
             sale_items.append(sale_item)

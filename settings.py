@@ -15,17 +15,19 @@ class SettingsClass():
         # flags
         self.pull_html = True
         self.email_notify = True       # flag to push notify to email
+        self.wanted_items_key_word_check = True
 
         # email notify list
         self.email_list = ['lanebirmbetnotify@gmail.com']
 
         # input variables
         self.urls = [
-            "https://www.gumtree.com.au/s-brisbane/l3005721?sort=rank&price-type=free"]
+            "https://www.gumtree.com.au/s-brisbane/l3005721?sort=rank&price-type=free", "https://www.gumtree.com.au/s-tool-storage-benches/brisbane/c20094l3005721", "https://www.gumtree.com.au/s-home-garden/brisbane/c18397l3005721", "https://www.gumtree.com.au/s-tools-diy/brisbane/c18430l3005721"]
 
         # constants
         self.html_save_location_prefix = "html_files/html_"
         self.csv_save_location = "latest_data.csv"
+        self.wanted_items_key_words = ["3080", "iron", "toolbox", "tool chest", "chair"]
 
         self.save_current_only = False
 
