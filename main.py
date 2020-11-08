@@ -133,6 +133,13 @@ def main():
             links_string = links_string + link + "\n"
         msg.attach(SimplyNotify.MIMEText(
             links_string))
+        
+        # Attach Key phrases checked
+        key_phrases_string = "\nKey phrases checked are: \n"
+        for link in settings.wanted_items_key_words:
+            key_phrases_string = key_phrases_string + link + "\n"
+        msg.attach(SimplyNotify.MIMEText(
+            key_phrases_string))
 
         # Gen df in email form
         html = """\
