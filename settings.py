@@ -22,12 +22,12 @@ class SettingsClass():
 
         # input variables
         self.urls = [
-            "https://www.gumtree.com.au/s-brisbane/l3005721?sort=rank&price-type=free", "https://www.gumtree.com.au/s-tool-storage-benches/brisbane/c20094l3005721", "https://www.gumtree.com.au/s-home-garden/brisbane/c18397l3005721", "https://www.gumtree.com.au/s-tools-diy/brisbane/c18430l3005721"]
+            "https://www.gumtree.com.au/s-electronics-computer/brisbane/c20045l3005721?sort=rank"]
 
         # constants
         self.html_save_location_prefix = "html_files/html_"
         self.csv_save_location = "latest_data.csv"
-        self.wanted_items_key_words = ["3080", "iron", "toolbox", "tool chest", "chair"]
+        self.wanted_items_key_words = ["Iphone 11 Pro"]
 
         self.save_current_only = False
 
