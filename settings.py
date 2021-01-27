@@ -27,7 +27,7 @@ class SettingsClass():
 
         #gumtree specific
         self.gumtree_urls = [
-            "https://www.gumtree.com.au/s-electronics-computer/brisbane/c20045l3005721?sort=rank"]
+            "https://www.gumtree.com.au/s-bicycles/brisbane/c18560l3005721"]
 
         # facebook specific
         self.facebook_marketplace_urls = []  # to be generated from wanted items keywords
@@ -35,7 +35,7 @@ class SettingsClass():
         # constants
         self.html_save_location_prefix = "html_files/html_"
         self.csv_save_location = "latest_data.csv"
-        self.wanted_items_key_words = ["fluke"]
+        self.wanted_items_key_words = ["bike"]
 
         self.save_current_only = False
 

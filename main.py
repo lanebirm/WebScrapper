@@ -71,6 +71,7 @@ def main():
         prev_sale_items_df["Post Time"] = pd.to_datetime(
             prev_sale_items_df["Post Time"])
     except:
+        prev_sale_items_df = pd.DataFrame(columns=settings.df_column_names)
         print("Could not load csv")
 
     # Check through new items against wanted items list to decide if an email notification is needed
@@ -134,8 +135,8 @@ def main():
         
         # Attach Key phrases checked
         key_phrases_string = "\nKey phrases checked are: \n"
-        for link in settings.wanted_items_key_words:
-            key_phrases_string = key_phrases_string + link + "\n"
+        for phrase in settings.wanted_items_key_words:
+            key_phrases_string = key_phrases_string + phrase + "\n\n"
         msg.attach(SimplyNotify.MIMEText(
             key_phrases_string))
 
