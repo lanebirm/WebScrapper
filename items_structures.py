@@ -16,11 +16,11 @@ def main():
 class SaleItemConstructor():
     """ class for a sale item """
 
-    def __init__(self):
+    def __init__(self, df_column_names):
 
         # init defaults
         self.supported_sites = ["Gumtree"]
-        self.df_column_names = ['Site Title', 'Post Time','Description', 'Location', 'Price', 'Link']
+        self.df_column_names = df_column_names
 
     def generate_items_gumtree(self, site_object, key_description_words=[]):
 
@@ -82,7 +82,7 @@ class SaleItemConstructor():
             if len(key_description_words) > 0:
                 key_found = False
                 for key_word in key_description_words:
-                    if key_word in sale_item['Description']:
+                    if key_word.lower() in sale_item['Description'].lower():
                         key_found = True
                         break
                 
