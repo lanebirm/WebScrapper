@@ -16,18 +16,26 @@ class SettingsClass():
         self.pull_html = True
         self.email_notify = True       # flag to push notify to email
         self.wanted_items_key_word_check = True
+        self.scrap_gumtree = True
+        self.scrap_facebook_marketplace = False
 
         # email notify list
         self.email_list = ['lanebirmbetnotify@gmail.com']
 
-        # input variables
-        self.urls = [
+        # general input variables
+        self.df_column_names = ['Site Title', 'Post Time','Description', 'Location', 'Price', 'Link']
+
+        #gumtree specific
+        self.gumtree_urls = [
             "https://www.gumtree.com.au/s-electronics-computer/brisbane/c20045l3005721?sort=rank"]
+
+        # facebook specific
+        self.facebook_marketplace_urls = []  # to be generated from wanted items keywords
 
         # constants
         self.html_save_location_prefix = "html_files/html_"
         self.csv_save_location = "latest_data.csv"
-        self.wanted_items_key_words = ["Iphone 11 Pro"]
+        self.wanted_items_key_words = ["fluke"]
 
         self.save_current_only = False
 

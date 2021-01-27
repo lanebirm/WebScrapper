@@ -15,6 +15,7 @@ import web_scrapper
 import items_structures
 import simple_notifications as SimplyNotify
 import time_convertor
+import facebook_marketplace_scrapper
 
 
 def main():
@@ -28,24 +29,28 @@ def main():
 
     email_notify = settings.email_notify
 
-    # database connection # TODO
-    # conn = sqlite3.connect('sale_items.db')
+    # GUMTREE ITEM SCRAPPING
+    if settings.scrap_gumtree:
+        for i, url in enumerate(settings.gumtree_urls):
+            if settings.pull_html:
+                # get BeautifulSoup parsed format of web sites. saved to /html_files folder
+                parsed_site_object = WS.parse_site_bs(
+                    url,  (settings.html_save_location_prefix + str(i) + ".html"))
+                parsed_site_objects.append(parsed_site_object)
+            else:
+                parsed_site_objects.append(WS.parse_local_file_bs(
+                    settings.html_save_location_prefix + str(i) + ".html"))
 
-    for i, url in enumerate(settings.urls):
-        if settings.pull_html:
-            # get BeautifulSoup parsed format of web sites. saved to /html_files folder
-            parsed_site_object = WS.parse_site_bs(
-                url,  (settings.html_save_location_prefix + str(i) + ".html"))
-            parsed_site_objects.append(parsed_site_object)
-        else:
-            parsed_site_objects.append(WS.parse_local_file_bs(
-                settings.html_save_location_prefix + str(i) + ".html"))
+        IC = items_structures.SaleItemConstructor(settings.df_column_names)
 
-    IC = items_structures.SaleItemConstructor()
+        # gumtree items generated
+        for soup in parsed_site_objects:
+            sale_items.extend(IC.generate_items_gumtree(soup, settings.wanted_items_key_words))
 
-    # gumtree items generated
-    for soup in parsed_site_objects:
-        sale_items.extend(IC.generate_items_gumtree(soup, settings.wanted_items_key_words))
+    # FACEBOOK ITEM SCRAPPING
+    if settings.scrap_facebook_marketplace:
+        FWS = facebook_marketplace_scrapper.App()
+        sale_items.extend(FWS.gen_sale_items(settings.wanted_items_key_words, settings.df_column_names))
 
     # if no new sale items exit script
     if len(sale_items) < 1:
@@ -59,7 +64,7 @@ def main():
         sale_items_df.to_csv("latest_data.csv", index=False)
         return True
 
-    # load currently saved list and compare to what was jsut scraped
+    # load currently saved list and compare to what was just scraped
     prev_sale_items_df = pd.DataFrame()
     try:
         prev_sale_items_df = pd.read_csv(settings.csv_save_location)
@@ -76,7 +81,7 @@ def main():
         if len(settings.wanted_items_key_words) > 0:
             for word in settings.wanted_items_key_words:
                 for row in sale_items_df.iterrows():
-                    if word in row[1]["Description"]:
+                    if word.lower() in row[1]["Description"].lower():
                         # keyword match found. 
                         # now check if already found previously
                         if not prev_sale_items_df.isin([row[1]["Link"]]).any().any():
@@ -85,38 +90,28 @@ def main():
                             break
     else:
         # check links to find matches
-        current_links = sale_items_df["Link"]
+        current_links = sale_items_df["Link"].to_list()
         if prev_sale_items_df.isin([current_links[0]]).any().any():
             # latest post is already saved in prev_links. No update needed
             print('Items list is up to date')
             return True
 
-    # new item avaliable. Replace all last hour items and
-    time_one_hour_ago = time_convertor.TimeClass()
-    time_one_hour_ago.gen_AEST(60.0)
+    # check if links previously found. If so then remove from sale_items_df
+    item_links = sale_items_df["Link"].to_list()
+    prev_item_links = prev_sale_items_df["Link"].to_list()
+    drop_indexes = []
+    for i, link in enumerate(item_links):
+        if link in prev_item_links:
+            drop_indexes.append(i)
+    # drop previously found items
+    sale_items_df.drop(drop_indexes, inplace=True)
 
-    cut_index = -1
-    for index, row in prev_sale_items_df.iterrows():
-        if row["Post Time"] < time_one_hour_ago.local_time:
-            # row post time is older than an hour
-            cut_index = index
-            break
-
-    current_sale_items_df = ""
-    if cut_index == -1:
-        # no old posts found. Just use new list
-        current_sale_items_df = sale_items_df
-    else:
-        if cut_index != 0:
-            # trim prev_sale_items_df to only items over an hour old
-            prev_sale_items_df = prev_sale_items_df.tail(-cut_index)
-
-        # Concatenating DataFrames
-        prev_sale_items_df = prev_sale_items_df.reset_index(drop=True)
-        sale_items_df = sale_items_df.reset_index(drop=True)
-        current_sale_items_df = pd.concat(
-            [sale_items_df, prev_sale_items_df], axis=0, sort=False)
-        current_sale_items_df = current_sale_items_df.reset_index(drop=True)
+    # Concatenating DataFrames
+    prev_sale_items_df = prev_sale_items_df.reset_index(drop=True)
+    sale_items_df = sale_items_df.reset_index(drop=True)
+    current_sale_items_df = pd.concat(
+        [sale_items_df, prev_sale_items_df], axis=0, sort=False)
+    current_sale_items_df = current_sale_items_df.reset_index(drop=True)
 
     # trim to 100 items. Update csv
     current_sale_items_df = current_sale_items_df.head(100)
@@ -127,12 +122,15 @@ def main():
     if email_notify == True:
         msg = SimplyNotify.MIMEMultipart()
 
+        disclaimer = "NOTE: Post time for facebook items is the time it is first scrapped as can not scrap an accurate time from listing \n"
+
         # Attach links to pages scrapped
-        links_string = "Links Scrapped Are: \n"
-        for link in settings.urls:
-            links_string = links_string + link + "\n"
-        msg.attach(SimplyNotify.MIMEText(
-            links_string))
+        if settings.scrap_gumtree:
+            links_string = "Links Scrapped on Gumtree Are: \n"
+            for link in settings.gumtree_urls:
+                links_string = links_string + link + "\n"
+            msg.attach(SimplyNotify.MIMEText(
+                links_string))
         
         # Attach Key phrases checked
         key_phrases_string = "\nKey phrases checked are: \n"
@@ -157,6 +155,8 @@ def main():
         for emails in settings.email_list:
             SimplyNotify.email(
                 'New Items', emails, input_msg=msg)
+    elif settings.email_notify:
+        print("No new items. Don't email notify")
 
     return
 
